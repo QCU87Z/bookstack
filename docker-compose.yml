@@ -1,0 +1,53 @@
+version: '3.5'
+services:
+  nginx:
+    image: nginx:latest
+    depends_on:
+    - bookstack
+    restart: unless-stopped
+    volumes:
+      - ./nginx/:/etc/nginx/
+    ports:
+      - 443:443
+      - 80:80
+
+  drawio:
+    image: jgraph/drawio:latest
+    restart: unless-stopped
+    ports:
+      - 8081:8080
+      - 8443:8443
+
+  mysql:
+    image: mysql:8.2
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=secret
+      - MYSQL_DATABASE=bookstack
+      - MYSQL_USER=bookstack
+      - MYSQL_PASSWORD=secret
+    volumes:
+      - ./mysql:/var/lib/mysql
+
+  bookstack:
+    image: solidnerd/bookstack:latest
+    restart: unless-stopped
+    depends_on:
+      - mysql
+      - drawio
+    environment:
+      - DB_HOST=mysql:3306
+      - DB_DATABASE=bookstack
+      - DB_USERNAME=bookstack
+      - DB_PASSWORD=secret
+      # Update as required
+      - APP_URL=https://localhost:8080
+      - APP_KEY=SomeRandomStringWith32CharaCters
+      - DRAWIO=https://localhost:8443/?embed=1&proto=json&spin=1
+      - DRAWIO=true
+      - ALLOWED_IFRAME_SOURCES=https://localhost:8443
+    volumes:
+      - ./bookstack_uploads:/var/www/bookstack/public/uploads
+      - ./bookstack_storage-uploads:/var/www/bookstack/storage/uploads
+    ports:
+      - "8080:8080"

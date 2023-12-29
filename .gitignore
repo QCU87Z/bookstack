@@ -1,0 +1,6 @@
+.vscode
+bookstack_*
+mysql
+nginx/private.key
+nginx/public.crt
+.DS_Store
